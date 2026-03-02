@@ -7,9 +7,10 @@ from pyspark.ml import Pipeline
 from pyspark.sql.types import DoubleType
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 from pyspark.ml.evaluation import RegressionEvaluator
-
 from pyspark.sql import SparkSession
+
 import time
+import matplotlib.pyplot as plt
 
 spark = SparkSession.builder \
     .appName("Pinal_BigData_Project") \
@@ -102,13 +103,17 @@ cv = CrossValidator(
 
 # COMMAND ----------
 
-# Step 10: Train/Test Split
-train_data, test_data = df.randomSplit([0.8, 0.2], seed=42)
+# Step 10: Train/Test Chronological Split
+
+# train_data, test_data = df.randomSplit([0.8, 0.2], seed=42)
+
+split_ts = df.approxQuantile("UTC_timestamp", [0.8], 0.0)[0]
+train_data = df.filter(df.UTC_timestamp <= split_ts)
+test_data  = df.filter(df.UTC_timestamp > split_ts)
 
 # COMMAND ----------
 
 # Step 11: Train
-import time
 
 start = time.time()
 model = cv.fit(train_data)
@@ -127,7 +132,6 @@ predictions.select("UTC", "MidPrice", "prediction").show()
 
 # COMMAND ----------
 
-from pyspark.ml.evaluation import RegressionEvaluator
 # RMSE (Root Mean Squared Error)
 rmse_evaluator = RegressionEvaluator(
     labelCol="MidPrice", predictionCol="prediction", metricName="rmse")
@@ -150,8 +154,6 @@ print(f"R²: {r2}")
 # COMMAND ----------
 
 # Plotting the result
-import matplotlib.pyplot as plt
-
 data_sizes_millions = [20, 40, 60, 80, 100]
 
 training_times =  [702.9470, 891.3144, 1102.3906, 1322.1354, 1494.9538]
@@ -174,8 +176,6 @@ plt.show()
 
 
 # COMMAND ----------
-
-import matplotlib.pyplot as plt
 
 # Data sizes as percentage of 10M
 data_percents = [20, 40, 60, 80, 100]
@@ -224,8 +224,6 @@ plt.tight_layout()
 plt.show()
 
 # COMMAND ----------
-
-import matplotlib.pyplot as plt
 
 # Data sizes (in millions)
 data_sizes = [20, 40, 60, 80, 100]
