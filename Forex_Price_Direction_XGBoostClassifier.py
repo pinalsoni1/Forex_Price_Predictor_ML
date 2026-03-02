@@ -12,6 +12,12 @@ from pyspark.ml.feature import VectorAssembler
 from pyspark.ml import Pipeline
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 # COMMAND ----------
 
@@ -50,8 +56,13 @@ assembler = VectorAssembler(
 
 # COMMAND ----------
 
-# Step 5: Train-Test Split
-train_df, test_df = df.randomSplit([0.8, 0.2], seed=42)
+# Step 5: Train-Test Chronological Split
+
+#train_df, test_df = df.randomSplit([0.8, 0.2], seed=42)
+
+split_ts = df.approxQuantile("UTC_timestamp", [0.8], 0.0)[0]
+train_df = df.filter(df.UTC_timestamp <= split_ts)
+test_df  = df.filter(df.UTC_timestamp > split_ts)
 
 # COMMAND ----------
 
@@ -96,7 +107,7 @@ cv = CrossValidator(
 # COMMAND ----------
 
 # Step 10: Train
-import time
+
 
 start = time.time()
 cvModel = cv.fit(train_df)
@@ -114,8 +125,6 @@ accuracy = evaluator.evaluate(predictions)
 print(f"Best Model Test Accuracy = {accuracy:.4f}")
 
 # COMMAND ----------
-
-from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 
 # Precision
 precision_evaluator = MulticlassClassificationEvaluator(
@@ -139,8 +148,6 @@ print(f"max_depth: {best_model.getOrDefault('max_depth')}")
 print(f"learning_rate: {best_model.getOrDefault('learning_rate')}")
 
 # COMMAND ----------
-
-import matplotlib.pyplot as plt
 
 # Dataset sizes in millions
 data_sizes = [20, 40, 60, 80, 100]
@@ -175,7 +182,6 @@ plt.show()
 # COMMAND ----------
 
 # Plotting the result
-import matplotlib.pyplot as plt
 
 data_sizes_millions = [20, 40, 60, 80, 100]
 
@@ -200,7 +206,6 @@ plt.show()
 
 # COMMAND ----------
 
-import matplotlib.pyplot as plt
 
 # Data
 data_sizes = ['20', '40', '60', '80', '100']
@@ -225,8 +230,6 @@ plt.show()
 
 # COMMAND ----------
 
-import matplotlib.pyplot as plt
-import numpy as np
 
 # Data
 data_sizes = ['2M', '4M', '6M', '8M', '10M']
