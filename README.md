@@ -1,6 +1,6 @@
-📈 Forex Price Prediction & Direction Modeling at Scale
+# 📈 Forex Price Prediction & Direction Modeling at Scale
 
-Overview
+## Overview
 
 This project explores whether short-term price movement in high-frequency Forex markets can be predicted using historical tick-level data, and whether such models can be trained efficiently at scale.
 
@@ -22,30 +22,36 @@ Predict whether the next price movement is upward or downward.
 Evaluate whether the modeling approach remains practical as data volume and compute scale increase.
 
 ⸻
-How to Run This Project
 
-This project is designed for a distributed Spark environment (Databricks recommended).
+## How to Run This Project
 
-Requirements
-	•	Python
-	•	PySpark
-	•	XGBoost
-	•	scikit-learn
+This project is designed for a distributed Spark environment  
+(Databricks recommended).
 
-Steps
-	1.	Set up a Spark environment (I have used Azure Databricks)
-	2.	Load Forex tick data with required columns
-	3.	Run notebooks/scripts in order:
-	•	Data preprocessing
-	•	Feature engineering
-	•	Model training and validation
-	•	Scalability experiments
+### Requirements
+- Python
+- PySpark
+- XGBoost
+- scikit-learn
 
-⚠️ Note: Large datasets (4M–10M rows) are not included due to GitHub size limits.
+### Steps
+1. Set up a Spark environment (I used Azure Databricks)
+   - Create a Databricks workspace + cluster in Azure Portal
+   - Choose runtime
+   - Choose worker size + autoscaling
+2. Put data in DBFS (Databricks File System)
+3. Attach the code notebook to a cluster
+4. Run the notebook as cells sequentially in the order shown, or execute the entire notebook end-to-end.
+   - Data preprocessing
+   - Feature engineering
+   - Model training and validation
+   - Scalability experiments
+
+⚠️ **Note:** Large datasets are not included due to GitHub size limits. To reproduce the results use your own high-frequency Forex tick data
 
 ⸻
 
-Data Overview
+## Data Overview
 
 The dataset consists of high-frequency Forex tick data with millions of records, including:
 	•	UTC timestamps
@@ -57,7 +63,7 @@ A key challenge of this project is transforming raw, noisy observations into tim
 
 ⸻
 
-Feature Engineering
+## Feature Engineering
 
 Feature engineering was designed to be time-aware, using only past information to reflect real-world deployment.
 
@@ -77,7 +83,7 @@ Price Direction (Classification)
 
 ⸻
 
-Modeling Approach
+## Modeling Approach
 
 Models Used
 
@@ -96,7 +102,7 @@ XGBoost Classifier (Price Direction)
 
 ⸻
 
-Validation Strategy
+## Validation Strategy
 	•	Chronological train–test split
 Data is split by time to ensure the model only learns from past observations and is evaluated on future data.
 	•	2-fold cross-validation (training set only)
@@ -106,7 +112,7 @@ This approach provides more reliable model comparison than a single split while 
 
 ⸻
 
-Evaluation Metrics
+## Evaluation Metrics
 
 Price Prediction
 	•	RMSE (Root Mean Squared Error)
@@ -119,7 +125,7 @@ Price Direction
 
 ⸻
 
-Scalability Experiments
+## Scalability Experiments
 
 To evaluate feasibility at scale, both scale-up and scale-out experiments were conducted.
 	•	Scale-Up:
@@ -132,7 +138,7 @@ Scaling primarily improves training speed and feasibility, not predictive perfor
 
 ⸻
 
-Key Design Choices & Rationale
+## Key Design Choices & Rationale
 
 	•	Separate regression and classification tasks to match distinct problem goals
 	•	Time-aware features (lags, rolling windows) to avoid data leakage
@@ -142,7 +148,7 @@ Key Design Choices & Rationale
 
 ⸻
 
-Learnings
+## Learnings
 	•	Problem framing and metric choice matter more than model complexity in noisy, high-frequency data
 	•	Time-aware feature design is critical for extracting meaningful signals
 	•	At very short horizons, sensitivity is more realistic than perfect accuracy
@@ -150,7 +156,7 @@ Learnings
 
 ⸻
 
-Next Steps
+## Next Steps
 	•	Move to fully time-based validation (rolling or expanding windows)
 	•	Explore longer prediction horizons
 	•	Tune decision thresholds to balance precision vs recall
@@ -158,7 +164,7 @@ Next Steps
 
 ⸻
 
-Technologies Used
+## Technologies Used
 	•	Python (PySpark, scikit-learn, XGBoost)
 	•	Apache Spark / Databricks
 	•	Jupyter Notebooks
