@@ -1,83 +1,168 @@
-📈 Forex Price Prediction & Direction ML Project
+📈 Forex Price Prediction & Direction Modeling at Scale
 
-A machine learning project focused on predicting the mid-price and classifying the direction of Forex (foreign exchange) tick data using large-scale historical datasets. This project leverages Random Forest Regressor for continuous price prediction and XGBoost Classifier for directional classification (up/down), making it suitable for algorithmic trading or financial forecasting.
+Overview
 
-⸻
+This project explores whether short-term price movement in high-frequency Forex markets can be predicted using historical tick-level data, and whether such models can be trained efficiently at scale.
 
-🔍 Project Objectives
-	•	📊 Mid-Price Forecasting: Predict the future mid-price of a currency pair using historical bid-ask data.
-	•	🔺 Price Direction Classification: Predict whether the next price movement will be upward (1) or downward/no change (0).
+High-frequency financial data is extremely noisy and fast-changing. Individual price movements are often random, which makes naive prediction unreliable.
+The goal of this project is not perfect accuracy, but to extract stable, short-term signals and evaluate whether they can be learned, validated, and retrained in a scalable way.
 
-⸻
-
-🧠 Machine Learning Models
-
-✅ Random Forest Regressor (for Mid-Price Prediction)
-	•	Predicts future mid-prices using ensemble decision trees.
-	•	Handles noise and outliers in financial data well.
-	•	Optimized using hyperparameter tuning and cross-validation.
-	•	Pipeline steps:
-	•	Feature vectorization (VectorAssembler)
-	•	Feature scaling (StandardScaler)
-	•	Model training (RandomForestRegressor)
-
-✅ XGBoost Classifier (for Price Direction Classification)
-	•	Gradient boosting decision tree algorithm ideal for imbalanced or noisy datasets.
-	•	Learns complex patterns in tick-level financial time series data.
-	•	Achieved directional prediction accuracy of up to 71.69% on 8 million tick samples.
+Two complementary modeling tasks are explored:
+	•	Price prediction (regression): What is the next price likely to be?
+	•	Price direction (classification): Is the price more likely to move up or down next?
 
 ⸻
 
-🗃️ Features Used
+Project Objectives
+	•	Mid-Price Forecasting
+Predict the next mid-price using recent bid-ask history.
+	•	Price Direction Classification
+Predict whether the next price movement is upward or downward.
+	•	Scalability & Feasibility
+Evaluate whether the modeling approach remains practical as data volume and compute scale increase.
 
-🔹 For Regression (Price Prediction)
+⸻
+
+Data Overview
+
+The dataset consists of high-frequency Forex tick data with millions of records, including:
+	•	UTC timestamps
+	•	Bid and ask prices
+	•	Bid and ask volumes
+
+At the tick level, prices fluctuate constantly and contain substantial noise.
+A key challenge of this project is transforming raw, noisy observations into time-aware features that capture short-term market behavior without leaking future information.
+
+⸻
+
+Feature Engineering
+
+Feature engineering was designed to be time-aware, using only past information to reflect real-world deployment.
+
+Price Prediction (Regression)
 	•	Mid Price = (Bid + Ask) / 2
-	•	Mid Lag 1 = Previous mid-price
-	•	Mid Return = % change in mid-price
-	•	Mid MA5 = 5-point moving average of mid-price
+	•	Lagged Mid Price (previous value)
+	•	Mid Return (% change)
+	•	Mid MA5 (short moving average)
 
-🔹 For Classification (Price Direction)
-	•	Spread = Ask - Bid
-	•	Volume Imbalance = Normalized buyer/seller dominance
-	•	Next Ask Price (used to derive the label, not as a feature)
-	•	Label = 1 (Ask price increased) or 0 (Ask same/decreased)
+These features capture price level, momentum, and short-term trend while smoothing noise.
 
-⸻
-
-🧪 Model Performance
-
-📉 Random Forest Regressor (Price Prediction)
-	•	Achieved low RMSE (Root Mean Squared Error) values across various data partitions
-	•	Robust to noise and outliers, making it suitable for volatile financial data
-	•	Performance remained stable as dataset scaled from 2M to 10M rows
-	•	Showed strong parallel scalability — training time dropped significantly with more Spark worker nodes
-
-📈 XGBoost Classifier (Price Direction)
-	•	Achieved classification accuracy up to 71.69% on 8M tick records
-	•	Accuracy improved steadily from 2M to 8M rows, then slightly decreased at 10M due to possible overfitting or noise
-	•	Effectively captured nonlinear patterns in price movement
-	•	Tuned using cross-validation for optimal hyperparameters
+Price Direction (Classification)
+	•	Spread = Ask − Bid (liquidity / uncertainty)
+	•	Volume Imbalance (buy vs sell pressure)
+	•	Label derived from next-step price movement
+(Used only to define the outcome, not as a feature)
 
 ⸻
 
-⚙️ Technologies Used
-	•	Python (PySpark, Scikit-learn, XGBoost)
-	•	Apache Spark (for big data processing)
-	•	Jupyter Notebooks / Databricks
+Modeling Approach
+
+Models Used
+
+Random Forest Regressor (Price Prediction)
+	•	Ensemble of decision trees for continuous price estimation
+	•	Robust to noise and outliers
+	•	Trained using a Spark ML pipeline:
+	•	VectorAssembler
+	•	StandardScaler
+	•	RandomForestRegressor
+
+XGBoost Classifier (Price Direction)
+	•	Gradient boosting decision trees
+	•	Well-suited for noisy, non-linear patterns
+	•	Achieved directional accuracy of up to ~72% on large datasets
+
+⸻
+
+Validation Strategy
+	•	Chronological train–test split
+Data is split by time to ensure the model only learns from past observations and is evaluated on future data.
+	•	2-fold cross-validation (training set only)
+Used for hyperparameter tuning to balance stability and computational cost.
+
+This approach provides more reliable model comparison than a single split while remaining practical for large-scale data.
+
+⸻
+
+Evaluation Metrics
+
+Price Prediction
+	•	RMSE (Root Mean Squared Error)
+Chosen because it penalizes large prediction errors more heavily, which is important in short-term financial forecasting.
+
+Price Direction
+	•	Accuracy – overall correctness
+	•	Precision – reliability of upward signals
+	•	Recall – ability to capture true upward movements
+
+High recall with moderate precision reflects a sensitivity-focused tradeoff, which is reasonable at the tick level where noise dominates.
+
+⸻
+
+Scalability Experiments
+
+To evaluate feasibility at scale, both scale-up and scale-out experiments were conducted.
+	•	Scale-Up:
+Increasing data size led to predictable, near-linear growth in training time.
+	•	Scale-Out:
+Adding Spark worker nodes reduced training time by nearly 3×, without changing model accuracy.
+
+Key insight:
+Scaling primarily improves training speed and feasibility, not predictive performance.
+
+⸻
+
+Key Design Choices & Rationale
+	•	Separate regression and classification tasks to match distinct problem goals
+	•	Time-aware features (lags, rolling windows) to avoid data leakage
+	•	RMSE chosen to penalize large price errors
+	•	Precision–recall tradeoff explicitly analyzed for direction prediction
+	•	Scalability evaluated to ensure models can be retrained realistically
+
+⸻
+
+How to Run This Project
+
+This project is designed for a distributed Spark environment (Databricks recommended).
+
+Requirements
+	•	Python
+	•	PySpark
+	•	XGBoost
+	•	scikit-learn
+
+Steps
+	1.	Set up a Spark environment (I have used Azure Databricks)
+	2.	Load Forex tick data with required columns
+	3.	Run notebooks/scripts in order:
+	•	Data preprocessing
+	•	Feature engineering
+	•	Model training and validation
+	•	Scalability experiments
+
+⚠️ Note: Large datasets (4M–10M rows) are not included due to GitHub size limits.
+You may use your own Forex tick data (e.g., Dukascopy) or enable Git LFS.
+
+⸻
+
+Learnings
+	•	Problem framing and metric choice matter more than model complexity in noisy, high-frequency data
+	•	Time-aware feature design is critical for extracting meaningful signals
+	•	At very short horizons, sensitivity is more realistic than perfect accuracy
+	•	Scaling affects feasibility and iteration speed, not model accuracy
+
+⸻
+
+Next Steps
+	•	Move to fully time-based validation (rolling or expanding windows)
+	•	Explore longer prediction horizons
+	•	Tune decision thresholds to balance precision vs recall
+	•	Add automated retraining and performance monitoring
+
+⸻
+
+Technologies Used
+	•	Python (PySpark, scikit-learn, XGBoost)
+	•	Apache Spark / Databricks
+	•	Jupyter Notebooks
 	•	Git & GitHub
-
-⸻
-
-🚀 Scalability Testing
-	•	Scale-Up: Increasing data size led to linear growth in training time (11.7 to 24.9 minutes from 2M to 10M records).
-	•	Scale-Out: Training time significantly reduced when using more Spark worker nodes.
-
-
-⸻
-
-⚠️ Note on Data
-
-Due to GitHub’s 100MB limit, large tick datasets (4M–10M rows) are not included in this repo.
-To replicate:
-	•	Use your own Forex tick data (e.g., from Dukascopy)
-	•	Or enable Git LFS for large file handling
