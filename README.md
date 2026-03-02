@@ -22,6 +22,28 @@ Predict whether the next price movement is upward or downward.
 Evaluate whether the modeling approach remains practical as data volume and compute scale increase.
 
 ⸻
+How to Run This Project
+
+This project is designed for a distributed Spark environment (Databricks recommended).
+
+Requirements
+	•	Python
+	•	PySpark
+	•	XGBoost
+	•	scikit-learn
+
+Steps
+	1.	Set up a Spark environment (I have used Azure Databricks)
+	2.	Load Forex tick data with required columns
+	3.	Run notebooks/scripts in order:
+	•	Data preprocessing
+	•	Feature engineering
+	•	Model training and validation
+	•	Scalability experiments
+
+⚠️ Note: Large datasets (4M–10M rows) are not included due to GitHub size limits.
+
+⸻
 
 Data Overview
 
@@ -95,8 +117,6 @@ Price Direction
 	•	Precision – reliability of upward signals
 	•	Recall – ability to capture true upward movements
 
-High recall with moderate precision reflects a sensitivity-focused tradeoff, which is reasonable at the tick level where noise dominates.
-
 ⸻
 
 Scalability Experiments
@@ -113,35 +133,12 @@ Scaling primarily improves training speed and feasibility, not predictive perfor
 ⸻
 
 Key Design Choices & Rationale
+
 	•	Separate regression and classification tasks to match distinct problem goals
 	•	Time-aware features (lags, rolling windows) to avoid data leakage
 	•	RMSE chosen to penalize large price errors
 	•	Precision–recall tradeoff explicitly analyzed for direction prediction
 	•	Scalability evaluated to ensure models can be retrained realistically
-
-⸻
-
-How to Run This Project
-
-This project is designed for a distributed Spark environment (Databricks recommended).
-
-Requirements
-	•	Python
-	•	PySpark
-	•	XGBoost
-	•	scikit-learn
-
-Steps
-	1.	Set up a Spark environment (I have used Azure Databricks)
-	2.	Load Forex tick data with required columns
-	3.	Run notebooks/scripts in order:
-	•	Data preprocessing
-	•	Feature engineering
-	•	Model training and validation
-	•	Scalability experiments
-
-⚠️ Note: Large datasets (4M–10M rows) are not included due to GitHub size limits.
-You may use your own Forex tick data (e.g., Dukascopy) or enable Git LFS.
 
 ⸻
 
